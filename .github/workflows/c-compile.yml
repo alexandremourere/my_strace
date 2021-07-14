@@ -15,5 +15,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - name: install
+      run: sudo apt-get --reinstall install libc6 libc6-dev libc6-dev-i386
     - name: make
       run: make
