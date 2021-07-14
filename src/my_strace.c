@@ -10,7 +10,12 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+#include "parse_syscall.h"
+
 extern int errno;
+
+#define ARCH_TYPE_64 64
+#define ARCH_TYPE_32 32
 
 // #define ARCH_ORIG = ORIG_RAX
 
@@ -114,6 +119,13 @@ int get_trace(int child)
              strerror(errnum));
     }
 
+    struct hash_map *p = parse_syscall(ARCH_TYPE_64);
+    if (NULL == p)
+    {
+        perror("parse_syscall");
+        return EXIT_FAILURE;
+    }
+
     while (1)
     {
         if (catch_syscall(child) != 0)
@@ -125,7 +137,7 @@ int get_trace(int child)
          * We look into RAX because it is where syscall values are stored.
          * On different architecture, we would potentially look elsewhere
          */
-        syscall_id = ptrace(PTRACE_PEEKUSER, child, sizeof(long) * ORIG_EAX);
+        syscall_id = ptrace(PTRACE_PEEKUSER, child, sizeof(long) * ORIG_RAX);
         if (syscall_id == -1)
         {
             errnum = errno;
@@ -134,7 +146,10 @@ int get_trace(int child)
                  strerror(errnum));
         }
 
-        fprintf(stdout, "syscall(%ld) ", syscall_id);
+        char str[15];
+        sprintf(str, "%ld", syscall_id);
+
+        fprintf(stdout, "%s ", hash_map_get(p, str));
 
         if (catch_syscall(child) != 0)
         {
@@ -146,7 +161,7 @@ int get_trace(int child)
          * End of the syscall, we can get its return value which is located in
          * the RAX register (EAX in 32-bits architecture).
          */
-        res = ptrace(PTRACE_PEEKUSER, child, sizeof(long) * EAX);
+        res = ptrace(PTRACE_PEEKUSER, child, sizeof(long) * RAX);
         fprintf(stdout, "has a return code of: %ld\n", res);
     }
     return EXIT_SUCCESS;
