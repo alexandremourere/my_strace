@@ -1,16 +1,16 @@
-#include <stdio.h>
-#include <stdlib.h>
 #include <err.h>
 #include <errno.h>
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
-#include <sys/types.h>
-#include <sys/wait.h>
 #include <sys/ptrace.h>
 #include <sys/reg.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
 extern int errno;
-
 
 void from_pid(int pid)
 {
@@ -19,9 +19,16 @@ void from_pid(int pid)
 
 int exec_child(int argc, char *argv[])
 {
-    if (argc == 0 || NULL == argv)
-        return EXIT_FAILURE;
-    return EXIT_SUCCESS;
+    char *arguments[argc + 1];
+    if (NULL == memcpy(arguments, argv, argc * sizeof(char *)))
+    {
+        errx(EXIT_FAILURE,
+             "Error while using memcpy to copy the argument list.");
+    }
+    arguments[argc] = NULL;
+    ptrace(PTRACE_TRACEME);
+    kill(getpid(), SIGSTOP);
+    return execvp(arguments[0], arguments);
 }
 
 int get_trace(pid_t child)
@@ -49,7 +56,7 @@ int main(int argc, char *argv[])
     }
     if (pid == 0)
     {
-        return exec_child(argc - 1, argv + 1); 
+        return exec_child(argc - 1, argv + 1);
     }
 
     return get_trace(pid);
