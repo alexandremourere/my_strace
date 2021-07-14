@@ -156,7 +156,7 @@ int main(int argc, char *argv[])
 {
     if (argc == 1)
     {
-        errx(EXIT_FAILURE, "usage: ./my_strace {list of pid}");
+        errx(EXIT_FAILURE, "usage: ./my_strace elf/command");
     }
     printf("============== Syscall Trace of %s ==============\n", argv[1]);
     int errnum = 0;
