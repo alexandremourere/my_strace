@@ -36,16 +36,10 @@ struct hash_map *parse_syscall(int arch_type)
     ssize_t r;
     int i = 0;
 
-    // char *key = NULL;
-    // char *value = NULL;
-
     while ((r = getline(&line, &len, f)) != -1)
     {
         if (i++ < 3)
             continue;
-
-        // char *key = NULL;
-        // char *value = NULL;
 
         int start = 0;
         while (*(line + start) != '\0' && *(line + start) != '\n'
@@ -70,7 +64,6 @@ struct hash_map *parse_syscall(int arch_type)
 
         char *key = strndup(line + start, end - start);
 
-        // where key and value are heap allocated.
         bool update;
         hash_map_insert(res, key, value, &update);
     }
