@@ -164,6 +164,7 @@ int get_trace(int child)
         res = ptrace(PTRACE_PEEKUSER, child, sizeof(long) * RAX);
         fprintf(stdout, "has a return code of: %ld\n", res);
     }
+    hash_map_free(p);
     return EXIT_SUCCESS;
 }
 

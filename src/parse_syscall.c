@@ -36,58 +36,43 @@ struct hash_map *parse_syscall(int arch_type)
     ssize_t r;
     int i = 0;
 
-    char *key = NULL;
-    char *value = NULL;
+    // char *key = NULL;
+    // char *value = NULL;
 
     while ((r = getline(&line, &len, f)) != -1)
     {
         if (i++ < 3)
             continue;
-        char *saveptr = NULL;
-        for (char *str1 = line;; str1 = NULL)
-        {
-            char *token = strtok_r(str1, " ", &saveptr);
-            if (NULL == token)
-            {
-                break;
-            }
-            if (!strcmp(token, "#define") || !strcmp(token, " "))
-            {
-                continue;
-            }
 
-            char *saveptrW = NULL;
+        // char *key = NULL;
+        // char *value = NULL;
 
-            for (char *str2 = token;; str2 = NULL)
-            {
-                char *word = strtok_r(str2, "_", &saveptrW);
+        int start = 0;
+        while (*(line + start) != '\0' && *(line + start) != '\n'
+               && *(line + start) != 'R')
+            start++;
+        if (*(line + start) == '\0' || *(line + start) == '\n')
+            continue;
 
-                if (NULL == word)
-                {
-                    break;
-                }
-                int is_nb = is_number(word);
-                if (strcmp(word, "NR"))
-                {
-                    if (is_nb)
-                    {
-                        key = word;
-                    }
-                    else
-                    {
-                        value = word;
-                    }
-                }
-            }
-        }
-        char d[strlen(key)];
-        for (size_t i = 0; i + 1 < strlen(key); i++)
-        {
-            d[i] = key[i];
-        }
-        d[strlen(key) - 1] = '\0';
-        bool update = 0;
-        hash_map_insert(res, strdup(d), strdup(value), &update);
+        start += 2;
+
+        int end = start + 1;
+        while (*(line + end) != '\0' && *(line + end) != '\n'
+               && *(line + end) != ' ')
+            end++;
+
+        char *value = strndup(line + start, end - start);
+
+        start = end + 1;
+
+        while (*(line + end) != '\n')
+            end++;
+
+        char *key = strndup(line + start, end - start);
+
+        // where key and value are heap allocated.
+        bool update;
+        hash_map_insert(res, key, value, &update);
     }
     free(line);
     fclose(f);
