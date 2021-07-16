@@ -151,9 +151,12 @@ int get_trace(int child)
 
         fprintf(stdout, "%s ", hash_map_get(p, str));
 
+        // TODO: get arguments here.
+
         if (catch_syscall(child) != 0)
         {
             // end of the child process.
+            fprintf(stdout, "has a return code of: ?\n");
             break;
         }
 
