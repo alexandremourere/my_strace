@@ -14,16 +14,19 @@
 
 extern int errno;
 
-#define ARCH_TYPE_64 64
-#define ARCH_TYPE_32 32
+#ifdef __x86_64__
 
-// #define ARCH_ORIG = ORIG_RAX
+#    define ARCH_TYPE 64
 
-// #ifndef __x86_64__
+#endif
 
-// #define ARCH_ORIG = ORIG_EAX
+#ifndef __x86_64__
 
-// #endif
+#    define ARCH_TYPE 32
+#    define ORIG_RAX ORIG_EAX
+#    define RAX EAX
+
+#endif
 
 void from_pid(int pid)
 {
@@ -119,7 +122,7 @@ int get_trace(int child)
              strerror(errnum));
     }
 
-    struct hash_map *p = parse_syscall(ARCH_TYPE_64);
+    struct hash_map *p = parse_syscall(ARCH_TYPE);
     if (NULL == p)
     {
         perror("parse_syscall");
