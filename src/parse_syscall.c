@@ -20,12 +20,20 @@ struct hash_map *parse_syscall(int arch_type)
 {
     FILE *f = NULL;
     if (arch_type == 64)
+    {
         f = fopen("/usr/include/asm/unistd_64.h", "r");
+	if (NULL == f)
+	    f = fopen("/usr/include/x86_64-linux-gnu/asm/unistd_64.h", "r");
+    }
     else
+    {
         f = fopen("/usr/include/asm/unistd_32.h", "r");
+	if (NULL == f)
+	    f = fopen("/usr/include/x86_32-linux-gnu/asm/unistd_32.h", "r");
+    }
     if (NULL == f)
     {
-        err(1, "error while opening the file.");
+        err(1, "Cannot find the syscall map in the system.");
         return NULL;
     }
 
